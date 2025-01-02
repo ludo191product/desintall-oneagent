@@ -1,0 +1,1 @@
+# desintall-oneagent
