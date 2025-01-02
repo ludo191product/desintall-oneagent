@@ -1,4 +1,7 @@
 ---
+- name: desinstallation du Oneagent
+  hosts: all
+  tasks:  
     - name: Vérifier si le répertoire de désinstallation existe
       ansible.builtin.stat:
         path: /opt/dynatrace/oneagent/agent
