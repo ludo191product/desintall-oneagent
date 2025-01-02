@@ -1,0 +1,31 @@
+---
+    - name: Vérifier si le répertoire de désinstallation existe
+      ansible.builtin.stat:
+        path: /opt/dynatrace/oneagent/agent
+      register: agent_dir
+
+    - name: Passer à la suite si le répertoire n'existe pas
+      debug:
+        msg: "Le répertoire n'existe pas. Aucune désinstallation n'est nécessaire."
+      when: not agent_dir.stat.exists
+
+    - name: Exécuter le script de désinstallation si le répertoire existe
+      block:
+        - name: Exécuter le script de désinstallation
+          ansible.builtin.command:
+            cmd: ./uninstall.sh
+            chdir: /opt/dynatrace/oneagent/agent
+          register: uninstall_result
+          failed_when: uninstall_result.rc != 0
+          ignore_errors: no
+
+        - name: Consigner le résultat de la désinstallation dans un fichier de log
+          ansible.builtin.copy:
+            content: |
+              Résultat de la désinstallation de OneAgent :
+              - Code de retour : {{ uninstall_result.rc }}
+              - Stdout : {{ uninstall_result.stdout }}
+              - Stderr : {{ uninstall_result.stderr }}
+            dest: /var/log/oneagent_uninstall.log
+      when: agent_dir.stat.exists
+
